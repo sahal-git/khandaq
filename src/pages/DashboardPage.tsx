@@ -210,19 +210,40 @@ const DashboardPage = () => {
             <span className="text-lg font-bold">KHANDAQ '25</span>
           </div>
           <div className="flex flex-1 items-center justify-end space-x-2">
-            {!authLoading && session && (
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/admin">
-                  <Shield className="h-4 w-4 mr-2" />
-                  <span className="hidden sm:inline">Admin</span>
-                </Link>
-              </Button>
+            {!authLoading && (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button asChild variant="ghost" size="icon">
+                            <Link to={session ? "/admin" : "/login"}>
+                                <Shield className="h-4 w-4" />
+                                <span className="sr-only">{session ? "Admin Panel" : "Admin Login"}</span>
+                            </Link>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{session ? "Admin Panel" : "Admin Login"}</p>
+                    </TooltipContent>
+                </Tooltip>
             )}
-            <Button variant="ghost" size="sm" onClick={handleRefresh} disabled={isLoading}>
-                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">Refresh</span>
-            </Button>
-            <ThemeToggle />
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={isLoading}>
+                        <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                        <span className="sr-only">Refresh</span>
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>Refresh Results</p>
+                </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <ThemeToggle />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Toggle Theme</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </header>

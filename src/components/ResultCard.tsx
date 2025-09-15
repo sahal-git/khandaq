@@ -42,15 +42,15 @@ export const ResultCard = ({ programCode, programName, programSection, entries }
   return (
     <div className="group rounded-lg h-full">
       <div className="gradient-border rounded-lg h-full">
-        <Card className="overflow-hidden transition-all duration-300 flex flex-col h-full group-hover:-translate-y-1 p-4">
-          <div className="mb-4">
+        <Card className="overflow-hidden transition-all duration-300 flex flex-col h-full group-hover:-translate-y-1 p-3">
+          <div className="mb-3">
             <h3 className="text-lg font-bold tracking-tight text-foreground">{programName}</h3>
             <p className="text-sm font-semibold uppercase tracking-wider bg-gradient-primary bg-clip-text text-transparent">
               {programCode} • {programSection}
             </p>
           </div>
           
-          <div className="flex-1 space-y-3">
+          <div className="flex-1 space-y-2">
             {entries.map((entry, index) => {
               const position = entry.position;
               let positionElement;
