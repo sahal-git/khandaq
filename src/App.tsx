@@ -7,6 +7,7 @@ import DashboardPage from "./pages/DashboardPage";
 import AdminPage from "./pages/AdminPage";
 import LoginPage from "./pages/LoginPage";
 import WallPage from "./pages/WallPage";
+import CertificatePage from "./pages/CertificatePage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeProvider } from "./components/theme-provider";
@@ -15,7 +16,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+  <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
@@ -26,6 +27,7 @@ const App = () => (
               <Route path="/" element={<DashboardPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/wall" element={<WallPage />} />
+              <Route path="/certificate" element={<CertificatePage />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/admin" element={<AdminPage />} />
               </Route>

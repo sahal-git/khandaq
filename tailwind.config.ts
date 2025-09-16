@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Lexend", "sans-serif"],
+        signature: ["'Dancing Script'", "cursive"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -110,12 +111,18 @@ export default {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
         },
+        "background-pan": {
+          "0%": { "background-position": "0% 50%" },
+          "50%": { "background-position": "100% 50%" },
+          "100%": { "background-position": "0% 50%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "border-spin": "border-spin 7s linear infinite",
         "ticker-scroll": "ticker-scroll 120s linear infinite",
+        "background-pan": "background-pan 15s ease infinite",
       },
     },
   },
