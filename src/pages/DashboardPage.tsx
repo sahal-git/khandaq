@@ -6,7 +6,7 @@ import { ResultCard } from '@/components/ResultCard';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Trophy, RefreshCw, PartyPopper, Filter, Shield } from 'lucide-react';
+import { Trophy, RefreshCw, PartyPopper, Filter, Shield, Award } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ResultCardSkeleton } from '@/components/ResultCardSkeleton';
 import { Separator } from '@/components/ui/separator';
@@ -210,6 +210,19 @@ const DashboardPage = () => {
             <span className="text-lg font-bold">KHANDAQ '25</span>
           </div>
           <div className="flex flex-1 items-center justify-end space-x-2">
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button asChild variant="ghost" size="icon">
+                        <Link to="/certificate">
+                            <Award className="h-4 w-4" />
+                            <span className="sr-only">Get Certificate</span>
+                        </Link>
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>Get Certificate</p>
+                </TooltipContent>
+            </Tooltip>
             {!authLoading && (
                 <Tooltip>
                     <TooltipTrigger asChild>
