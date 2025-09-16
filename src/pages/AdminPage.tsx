@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/contexts/AuthContext';
 import { useResultsData } from '@/hooks/useResultsData';
@@ -8,9 +8,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, LogOut, ShieldCheck, ShieldOff } from 'lucide-react';
+import { Loader2, ShieldCheck, ShieldOff, Home, Menu } from 'lucide-react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '@/components/theme-toggle';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@/components/ui/avatar';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 interface ProgramStatus {
   program_code: string;
@@ -18,7 +32,7 @@ interface ProgramStatus {
 }
 
 const AdminPage = () => {
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const webappUrl = 'https://script.google.com/macros/s/AKfycbzYuQKwLM-z4iT8qemGv3r2HLGjDK-fiH6Hs04JbUkhrXsVAi4hB30VjTHml68FNFj6aA/exec';
   
@@ -28,11 +42,7 @@ const AdminPage = () => {
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
-  useEffect(() => {
-    fetchStatuses();
-  }, []);
-
-  const fetchStatuses = async () => {
+  const fetchStatuses = useCallback(async () => {
     setLoadingStatuses(true);
     const { data, error } = await supabase.from('program_status').select('program_code, is_published');
     if (error) {
@@ -41,23 +51,71 @@ const AdminPage = () => {
       setStatuses(data || []);
     }
     setLoadingStatuses(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchStatuses();
+  }, [fetchStatuses]);
+
+  const uniquePrograms = useMemo(() => {
+    const programs = new Map<string, { name: string; section: string; status: string }>();
+    resultsData.forEach(item => {
+      if (item.programCode && !programs.has(item.programCode)) {
+        programs.set(item.programCode, {
+          name: item.programName,
+          section: item.programSection,
+          status: item.status, // Capture the status from the CSV data
+        });
+      }
+    });
+    return Array.from(programs.entries()).map(([code, { name, section, status }]) => ({ code, name, section, status }));
+  }, [resultsData]);
+
+  useEffect(() => {
+    if (resultsLoading || loadingStatuses || !uniquePrograms.length) {
+      return;
+    }
+
+    const programsToPublish: { program_code: string; is_published: boolean; updated_at: string }[] = [];
+    const statusMap = new Map(statuses.map(s => [s.program_code, s.is_published]));
+
+    uniquePrograms.forEach(program => {
+      const isPublishedInCsv = program.status.toLowerCase() === 'published';
+      const isPublishedInDb = statusMap.get(program.code) || false;
+
+      if (isPublishedInCsv && !isPublishedInDb) {
+        programsToPublish.push({
+          program_code: program.code,
+          is_published: true,
+          updated_at: new Date().toISOString(),
+        });
+      }
+    });
+
+    if (programsToPublish.length > 0) {
+      const autoPublish = async () => {
+        toast.info(`Found ${programsToPublish.length} program(s) to auto-publish...`);
+        const { error } = await supabase
+          .from('program_status')
+          .upsert(programsToPublish, { onConflict: 'program_code' });
+
+        if (error) {
+          toast.error('Auto-publish failed', { description: error.message });
+        } else {
+          toast.success(`${programsToPublish.length} program(s) were auto-published.`);
+          fetchStatuses(); // Refresh statuses from DB to update UI
+        }
+      };
+
+      autoPublish();
+    }
+  }, [uniquePrograms, statuses, resultsLoading, loadingStatuses, fetchStatuses]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/login');
     toast.info('You have been logged out.');
   };
-
-  const uniquePrograms = useMemo(() => {
-    const programs = new Map<string, { name: string; section: string }>();
-    resultsData.forEach(item => {
-      if (item.programCode && !programs.has(item.programCode)) {
-        programs.set(item.programCode, { name: item.programName, section: item.programSection });
-      }
-    });
-    return Array.from(programs.entries()).map(([code, { name, section }]) => ({ code, name, section }));
-  }, [resultsData]);
 
   const combinedData = useMemo(() => {
     return uniquePrograms.map(program => {
@@ -112,35 +170,99 @@ const AdminPage = () => {
   const isLoading = resultsLoading || loadingStatuses;
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-lg">
-        <div className="container flex h-16 items-center justify-between">
-          <h1 className="text-xl font-bold">Admin Panel</h1>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
+    <div className="flex min-h-screen w-full flex-col">
+      <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 z-10">
+        <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-lg font-semibold md:text-base"
+          >
+            <img src="https://res.cloudinary.com/dsth5rkbf/image/upload/v1757926509/logoo_jckvfk.png" alt="KHANDAQ '25 Logo" className="h-8 w-8" />
+            <span className="font-bold text-lg">KHANDAQ '25</span>
+          </Link>
+          <Link
+            to="/"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Home
+          </Link>
+          <Link
+            to="/admin"
+            className="font-bold text-foreground transition-colors hover:text-foreground"
+          >
+            Programs
+          </Link>
+        </nav>
+        
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="shrink-0 md:hidden"
+            >
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Toggle navigation menu</span>
             </Button>
-          </div>
+          </SheetTrigger>
+          <SheetContent side="left">
+            <nav className="grid gap-6 text-lg font-medium">
+              <Link
+                to="/"
+                className="flex items-center gap-2 text-lg font-semibold"
+              >
+                <img src="https://res.cloudinary.com/dsth5rkbf/image/upload/v1757926509/logoo_jckvfk.png" alt="KHANDAQ '25 Logo" className="h-8 w-8" />
+                <span>KHANDAQ '25</span>
+              </Link>
+              <Link to="/" className="text-muted-foreground hover:text-foreground">
+                Home
+              </Link>
+              <Link
+                to="/admin"
+                className="font-bold text-foreground"
+              >
+                Programs
+              </Link>
+            </nav>
+          </SheetContent>
+        </Sheet>
+
+        <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4 justify-end">
+          <ThemeToggle />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="icon" className="rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={`https://avatar.vercel.sh/${user?.email}.png`} alt="User Avatar" />
+                  <AvatarFallback>{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <span className="sr-only">Toggle user menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleSignOut}>Logout</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
-      <main className="container py-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Manage Programs</CardTitle>
-            <div className="flex gap-2">
+      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 bg-muted/40">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl md:text-3xl font-semibold">Manage Programs</h1>
+          <div className="flex flex-wrap gap-2">
               <Button size="sm" onClick={() => handleBulkUpdate(true)} disabled={isBulkUpdating || isLoading}>
                 {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
                 Publish All
               </Button>
               <Button size="sm" variant="destructive" onClick={() => handleBulkUpdate(false)} disabled={isBulkUpdating || isLoading}>
-                 {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldOff className="mr-2 h-4 w-4" />}
+                  {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldOff className="mr-2 h-4 w-4" />}
                 Unpublish All
               </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+        </div>
+        <Card>
+          <CardContent className="pt-6">
             {isLoading ? (
               <div className="flex justify-center items-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -151,7 +273,8 @@ const AdminPage = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Program</TableHead>
-                      <TableHead>Status</TableHead>
+                      <TableHead>Data Status</TableHead>
+                      <TableHead>Publish Status</TableHead>
                       <TableHead className="text-right">Action</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -163,19 +286,28 @@ const AdminPage = () => {
                           <div className="text-sm text-muted-foreground">{item.code} • {item.section}</div>
                         </TableCell>
                         <TableCell>
+                          {item.status && (
+                            <Badge variant="outline" className="capitalize">
+                              {item.status.toLowerCase()}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <Badge variant={item.is_published ? 'default' : 'secondary'}>
                             {item.is_published ? 'Published' : 'Offline'}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end">
-                            {isUpdating === item.code && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                            <Switch
-                              checked={item.is_published}
-                              onCheckedChange={(checked) => handleStatusChange(item.code, checked)}
-                              disabled={isUpdating === item.code || isBulkUpdating}
-                              aria-label={`Toggle publication status for ${item.name}`}
-                            />
+                          <div className="flex items-center justify-end gap-4">
+                            <div className="flex items-center">
+                              {isUpdating === item.code && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                              <Switch
+                                checked={item.is_published}
+                                onCheckedChange={(checked) => handleStatusChange(item.code, checked)}
+                                disabled={isUpdating === item.code || isBulkUpdating}
+                                aria-label={`Toggle publication status for ${item.name}`}
+                              />
+                            </div>
                           </div>
                         </TableCell>
                       </TableRow>

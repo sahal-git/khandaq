@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DashboardPage from "./pages/DashboardPage";
 import AdminPage from "./pages/AdminPage";
 import LoginPage from "./pages/LoginPage";
-import WallPage from "./pages/WallPage";
 import CertificatePage from "./pages/CertificatePage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -26,7 +25,6 @@ const App = () => (
             <Routes>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/login" element={<LoginPage />} />
-              <Route path="/wall" element={<WallPage />} />
               <Route path="/certificate" element={<CertificatePage />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/admin" element={<AdminPage />} />
