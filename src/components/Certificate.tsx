@@ -41,7 +41,7 @@ export const Certificate = React.forwardRef<HTMLDivElement, CertificateProps>(
     };
 
     return (
-      <div className="dark"> {/* Force dark theme for on-screen view */}
+      <div> {/* Use default theme for on-screen view */}
         <div
           id="certificate-wrapper"
           className={cn("", className)}
@@ -50,8 +50,8 @@ export const Certificate = React.forwardRef<HTMLDivElement, CertificateProps>(
           <div
             id="certificate"
             ref={ref}
-            style={{ width: '1692px', height: '1164px' }}
-            className="relative flex flex-col overflow-hidden rounded-2xl bg-background p-2 shadow-2xl transition-all duration-300 print:border-gray-800 print:bg-white print:text-black"
+            style={{ width: '900px', height: '621px' }}
+            className="relative flex flex-col overflow-hidden rounded-2xl bg-background p-2 shadow-2xl transition-all duration-300 print:border-gray-800 print:bg-white print:text-black print:!w-[1200px] print:!h-[828px]"
           >
             {/* Background Elements Layer */}
             <div className="absolute inset-0 z-0 overflow-hidden rounded-[inherit]">
@@ -74,47 +74,47 @@ export const Certificate = React.forwardRef<HTMLDivElement, CertificateProps>(
               <div className="flex h-full w-full flex-col items-center justify-between rounded-[inherit] border border-amber-400/20 p-5 text-center print:border-gray-400">
                 
                 {/* Seal */}
-                <div className="absolute bottom-10 right-10 z-20 h-28 w-28 rounded-full border-2 border-amber-400/30 bg-background/50 p-2 backdrop-blur-sm print:border-amber-500 print:bg-white/50">
+                <div className="absolute bottom-6 right-6 z-20 h-16 w-16 rounded-full border-2 border-amber-400/30 bg-background/50 p-1.5 backdrop-blur-sm print:bottom-8 print:right-8 print:h-20 print:w-20 print:p-2 print:border-amber-500 print:bg-white/50">
                   <div className="flex h-full w-full items-center justify-center rounded-full border border-amber-400/50">
-                    <img src="https://res.cloudinary.com/dsth5rkbf/image/upload/v1757926509/logoo_jckvfk.png" alt="Seal" className="h-16 w-16 opacity-80" />
+                    <img src="https://res.cloudinary.com/dsth5rkbf/image/upload/v1757926509/logoo_jckvfk.png" alt="Seal" className="h-10 w-10 opacity-80 print:h-12 print:w-12" />
                   </div>
                 </div>
 
                 {/* Header */}
-                <div className="flex w-full items-start justify-between px-8 pt-4">
+                <div className="flex w-full items-start justify-between px-6 pt-3 print:px-8 print:pt-4">
                   <div className="text-left">
-                    <p className="font-semibold text-foreground print:text-black text-lg">KHANDAQ '25</p>
-                    <p className="text-sm text-muted-foreground print:text-gray-500">Arts Festival</p>
+                    <p className="font-semibold text-foreground print:text-black text-sm">KHANDAQ '25</p>
+                    <p className="text-xs text-muted-foreground print:text-gray-500">Arts Festival</p>
                   </div>
-                  <img src="https://res.cloudinary.com/dsth5rkbf/image/upload/v1757926509/logoo_jckvfk.png" alt="Logo" className="h-20 print:h-24" />
+                  <img src="https://res.cloudinary.com/dsth5rkbf/image/upload/v1757926509/logoo_jckvfk.png" alt="Logo" className="h-12 print:h-16" />
                 </div>
 
                 {/* Main Content */}
-                <div className="flex flex-col items-center -mt-16">
-                  <p className="font-semibold uppercase tracking-[0.3em] text-amber-500 dark:text-amber-400 print:text-amber-600 text-lg">
+                <div className="flex flex-col items-center -mt-8 print:-mt-12">
+                  <p className="font-semibold uppercase tracking-[0.25em] text-amber-500 dark:text-amber-400 print:text-amber-600 text-xs print:text-sm print:tracking-[0.3em]">
                     Certificate of Achievement
                   </p>
-                  <h2 className="my-6 max-w-full truncate bg-gradient-primary bg-clip-text text-center text-8xl font-extrabold text-transparent print:bg-none print:text-pink-600 print:text-7xl">
+                  <h2 className="my-3 max-w-full truncate bg-gradient-primary bg-clip-text text-center text-5xl font-extrabold text-transparent print:my-4 print:bg-none print:text-pink-600 print:text-5xl">
                     {name}
                   </h2>
-                  <p className="text-3xl font-medium text-muted-foreground print:text-gray-700">of Team <strong className="text-foreground print:text-black">{team}</strong></p>
+                  <p className="text-lg font-medium text-muted-foreground print:text-xl print:text-gray-700">of Team <strong className="text-foreground print:text-black">{team}</strong></p>
                 </div>
 
                 {/* Footer */}
-                <div className="w-full max-w-5xl text-center pb-8">
-                  <p className="text-2xl text-muted-foreground print:text-gray-600 leading-relaxed">
+                <div className="w-full max-w-2xl text-center pb-6 print:pb-8 print:max-w-3xl">
+                  <p className="text-base text-muted-foreground print:text-lg print:text-gray-600 leading-relaxed">
                     {achievementText()} in the program <strong className="font-semibold text-foreground print:text-black">"{programName}"</strong><br />during the KHANDAQ '25 Arts Festival.
                   </p>
-                  <div className="mt-20 flex items-center justify-center gap-24">
+                  <div className="mt-10 flex items-center justify-center gap-12 print:mt-14 print:gap-16">
                     <div className="text-center">
-                      <p className="font-bold text-3xl font-signature text-foreground print:text-black">Chairman</p>
-                      <div className="w-64 border-b border-dashed border-foreground/50 my-2"></div>
-                      <p className="text-sm text-muted-foreground print:text-gray-500">Fest Committee</p>
+                      <p className="font-bold text-lg font-signature text-foreground print:text-black print:text-xl">Chairman</p>
+                      <div className="w-36 border-b border-dashed border-foreground/50 my-1.5 print:w-48 print:my-2"></div>
+                      <p className="text-xs text-muted-foreground print:text-gray-500">Fest Committee</p>
                     </div>
                     <div className="text-center">
-                      <p className="font-bold text-3xl font-signature text-foreground print:text-black">Convenor</p>
-                      <div className="w-64 border-b border-dashed border-foreground/50 my-2"></div>
-                      <p className="text-sm text-muted-foreground print:text-gray-500">Fest Committee</p>
+                      <p className="font-bold text-lg font-signature text-foreground print:text-black print:text-xl">Convenor</p>
+                      <div className="w-36 border-b border-dashed border-foreground/50 my-1.5 print:w-48 print:my-2"></div>
+                      <p className="text-xs text-muted-foreground print:text-gray-500">Fest Committee</p>
                     </div>
                   </div>
                 </div>
